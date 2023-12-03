@@ -1,0 +1,132 @@
+esphome:
+  name: mb
+  friendly_name: mb
+  on_boot: 
+    priority: -100
+    then:
+    - delay: 3sec
+    - component.update: my_display
+    - delay: 200ms
+    - component.update: my_display
+    - delay: 200ms
+    - output.turn_off: GPIO16_PIN
+
+
+
+esp32:
+  board: esp32-s2-saola-1
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+ota:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Mb Fallback Hotspot"
+    password: "12345678"
+
+captive_portal:
+
+
+web_server:
+  port: 80 
+
+
+time:
+  - platform: homeassistant
+    id: esptime
+
+light:
+  - platform: neopixelbus
+    type: GRBW
+    variant: WS2812X
+    pin: GPIO18
+    num_leds: 4
+    name: neo
+    restore_mode: ALWAYS_ON
+
+# Example configuration entry
+switch:
+  - platform: gpio
+    pin: 21
+    inverted: true
+    name: "LED_power"
+
+binary_sensor:
+  - platform: gpio
+    pin: GPIO1
+    name: "Sensor 1"
+    device_class: window
+
+  - platform: gpio
+    pin: GPIO2
+    name: "Sensor 2"
+    device_class: window
+
+  - platform: gpio
+    pin: GPIO3
+    name: "Sensor 3"
+    device_class: window
+
+  - platform: gpio
+    pin: GPIO4
+    name: "Sensor 4"
+    device_class: window
+
+  - platform: gpio
+    pin: GPIO5
+    name: "Sensor 5"
+    device_class: window
+
+
+spi:
+  clk_pin: GPIO36
+  mosi_pin: GPIO35
+
+output:
+  - platform: gpio
+    pin: GPIO16
+    id: GPIO16_PIN
+
+font:
+  - id: font_large
+    file: "fonts/arial.ttf"
+    size: 18
+
+
+display:
+  - platform: waveshare_epaper
+    id: my_display
+    rotation: 270
+    cs_pin: 41
+    dc_pin: 40
+    busy_pin: 42
+    reset_pin: 39
+    #model: 2.13in #pos ok, blikns + fade
+    #model: 2.13in-ttgo # nejde
+    #model: 2.13in-ttgo-b73 #nejde
+    model: 2.13in-ttgo-b74 #nejlepsi, vsechno funguje jak ma
+    #model: 2.13in-ttgo-b1 #KO
+    #model: 2.13in-ttgo-dke # lot of noise, with waveshare beta    
+    update_interval: 20s
+    reset_duration: 2ms
+    full_update_every: 180
+    lambda: |-
+      id(GPIO16_PIN).turn_off();
+      it.strftime(0, 0, id(font_large), "%d. %B %Y  %H:%M:%S", id(esptime).now());
+      it.line(10,26,240,26);
+      it.line(10,110,240,110);
+      it.line(95,26,95,110);
+      it.line(95,44,240,44);
+      it.line(0,0,250,122);
+       id(GPIO16_PIN).turn_off();
